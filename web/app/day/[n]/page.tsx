@@ -51,8 +51,15 @@ export default async function DayPage({ params }: PageProps) {
   const { prev, next } = getAdjacentDays(day);
 
   return (
-    <div className="min-h-full bg-background">
-      <main className="mx-auto max-w-lg px-4 pt-6 pb-28">
+    <>
+      <main
+        className="mx-auto max-w-lg pb-32 pt-5"
+        style={{
+          paddingLeft: "max(1rem, env(safe-area-inset-left))",
+          paddingRight: "max(1rem, env(safe-area-inset-right))",
+          paddingTop: "max(1.25rem, env(safe-area-inset-top))",
+        }}
+      >
         <DayHeader
           day={post.day}
           title={post.title}
@@ -64,6 +71,6 @@ export default async function DayPage({ params }: PageProps) {
         <ArticleContent body={bodyForArticle(post.body)} />
       </main>
       <DayNav prev={prev} next={next} />
-    </div>
+    </>
   );
 }

@@ -1,6 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 
+import { MobileShell } from "@/components/mobile-shell";
+
 import "./globals.css";
 
 const geistSans = Geist({
@@ -19,11 +21,21 @@ export const metadata: Metadata = {
     template: "%s | study-business",
   },
   description: "機構部品（金具）を毎日少しずつ学ぶモバイル向けリーダー",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "金具学習",
+  },
+  manifest: "/manifest.json",
+  formatDetection: {
+    telephone: false,
+  },
 };
 
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
+  viewportFit: "cover",
   themeColor: "#f8f6f2",
 };
 
@@ -37,7 +49,9 @@ export default function RootLayout({
       lang="ja"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full bg-background text-foreground">{children}</body>
+      <body className="min-h-[100dvh] bg-background text-foreground antialiased">
+        <MobileShell>{children}</MobileShell>
+      </body>
     </html>
   );
 }

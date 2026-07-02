@@ -1,7 +1,7 @@
 import { Badge } from "@/components/ui/badge";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
+import { ProgressBar } from "@/components/progress-bar";
 
 type DayHeaderProps = {
   day: number;
@@ -21,7 +21,6 @@ export function DayHeader({
   totalDays,
 }: DayHeaderProps) {
   const dayLabel = `Day ${String(day).padStart(3, "0")}`;
-  const progress = Math.ceil((day / totalDays) * 100);
 
   return (
     <header className="space-y-4">
@@ -32,7 +31,7 @@ export function DayHeader({
         <h1 className="text-2xl font-semibold leading-tight tracking-tight">
           {dayLabel}
         </h1>
-        <p className="text-lg font-medium text-foreground/90">{title}</p>
+        <p className="text-lg font-medium leading-snug text-foreground/90">{title}</p>
         {category ? (
           <Badge variant="secondary" className="h-6">
             {category}
@@ -40,17 +39,10 @@ export function DayHeader({
         ) : null}
       </div>
 
-      <Progress value={progress}>
-        <div className="mb-2 flex w-full items-center justify-between text-sm">
-          <span className="font-medium">学習進捗</span>
-          <span className="text-muted-foreground tabular-nums">
-            {day} / {totalDays} 日目
-          </span>
-        </div>
-      </Progress>
+      <ProgressBar day={day} totalDays={totalDays} />
 
       {lead ? (
-        <p className="rounded-2xl border bg-muted/40 px-4 py-4 text-[15px] leading-7 text-foreground/90">
+        <p className="rounded-2xl border border-primary/10 bg-card/90 px-4 py-4 text-[15px] leading-7 text-foreground/90 shadow-sm">
           {lead}
         </p>
       ) : null}
@@ -62,10 +54,14 @@ export function DayHeader({
           </h2>
           <div className="space-y-3">
             {points.map((point, index) => (
-              <Card key={point} size="sm" className="border-primary/10 bg-card/80">
+              <Card
+                key={point}
+                size="sm"
+                className="border-primary/10 bg-card/90 shadow-sm"
+              >
                 <CardHeader className="pb-0">
-                  <CardTitle className="flex items-start gap-2 text-sm font-medium">
-                    <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-primary text-xs text-primary-foreground">
+                  <CardTitle className="flex items-start gap-3 text-sm font-medium">
+                    <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-semibold text-primary-foreground">
                       {index + 1}
                     </span>
                     <span className="leading-6">{point}</span>

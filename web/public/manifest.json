@@ -1,0 +1,11 @@
+{
+  "name": "金具学習",
+  "short_name": "金具学習",
+  "description": "機構部品（金具）を毎日少しずつ学ぶモバイル向けリーダー",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f8f6f2",
+  "theme_color": "#8b5e3c",
+  "lang": "ja",
+  "orientation": "portrait"
+}

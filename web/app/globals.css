@@ -123,8 +123,16 @@
   }
   body {
     @apply bg-background text-foreground;
+    -webkit-tap-highlight-color: transparent;
   }
   html {
     @apply font-sans;
+    text-size-adjust: 100%;
+  }
+}
+
+@layer utilities {
+  .mobile-shell main {
+    @apply w-full;
   }
 }

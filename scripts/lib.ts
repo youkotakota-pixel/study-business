@@ -124,6 +124,17 @@ export function truncate(text: string, max: number): string {
   return `${normalized.slice(0, max - 1)}…`;
 }
 
+export function learningProgress(day: number, totalDays: number): number {
+  if (day < 1) return 0;
+  return Math.min(100, Math.ceil((day / totalDays) * 100));
+}
+
+export function progressBarText(day: number, totalDays: number, segments = 10): string {
+  const percent = learningProgress(day, totalDays);
+  const filled = percent === 0 ? 0 : Math.max(1, Math.round((percent / 100) * segments));
+  return `${"▰".repeat(filled)}${"▱".repeat(segments - filled)} ${percent}%`;
+}
+
 function stripMarkdown(text: string): string {
   return text
     .replace(/\*\*(.+?)\*\*/g, "$1")
@@ -206,26 +217,39 @@ export function buildSlackPayload(
   totalDays = 365,
 ): { text: string; blocks: SlackBlock[] } {
   const dayLabel = `Day ${String(parsed.day).padStart(3, "0")}`;
-  const headerText = truncate(`${dayLabel} ${parsed.title}`, 145);
   const fallbackText = `${dayLabel}: ${parsed.title}`;
+  const progress = progressBarText(parsed.day, totalDays);
 
   const blocks: SlackBlock[] = [
     {
       type: "header",
-      text: { type: "plain_text", text: headerText, emoji: true },
+      text: { type: "plain_text", text: dayLabel, emoji: true },
+    },
+    {
+      type: "section",
+      text: { type: "mrkdwn", text: `*${parsed.title}*` },
     },
     {
       type: "context",
       elements: [
         {
           type: "mrkdwn",
-          text: `📂 *${parsed.category}*　·　${parsed.day} / ${totalDays} 日目`,
+          text: parsed.category ? `📂 *${parsed.category}*` : "📂 金具学習",
+        },
+      ],
+    },
+    {
+      type: "context",
+      elements: [
+        {
+          type: "mrkdwn",
+          text: `*学習進捗*  ${progress}  ·  ${parsed.day} / ${totalDays} 日目`,
         },
       ],
     },
     {
       type: "section",
-      text: { type: "mrkdwn", text: parsed.lead },
+      text: { type: "mrkdwn", text: `>${parsed.lead.replace(/\n/g, "\n>")}` },
     },
   ];
 
@@ -234,9 +258,19 @@ export function buildSlackPayload(
       type: "section",
       text: {
         type: "mrkdwn",
-        text: `*今日のポイント*\n${parsed.points.map((p) => `• ${p}`).join("\n")}`,
+        text: `*今日のポイント*`,
       },
     });
+
+    for (const [index, point] of parsed.points.entries()) {
+      blocks.push({
+        type: "section",
+        text: {
+          type: "mrkdwn",
+          text: `*${index + 1}.*  ${point}`,
+        },
+      });
+    }
   }
 
   blocks.push({ type: "divider" });
@@ -248,6 +282,7 @@ export function buildSlackPayload(
         text: { type: "plain_text", text: "図つき全文を見る", emoji: true },
         url: articleUrl,
         action_id: `read-day-${parsed.day}`,
+        style: "primary",
       },
     ],
   });
@@ -256,7 +291,7 @@ export function buildSlackPayload(
     elements: [
       {
         type: "mrkdwn",
-        text: "スマホ: ボタンをタップ → 図つき全文を表示",
+        text: "スマホでタップ → 図つきの学習ページを表示",
       },
     ],
   });

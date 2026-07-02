@@ -47,8 +47,14 @@ export default function HomePage() {
   const recentDays = [...days].reverse().slice(0, 12);
 
   return (
-    <div className="min-h-full bg-background">
-      <main className="mx-auto max-w-lg space-y-6 px-4 py-8">
+    <main
+      className="mx-auto max-w-lg space-y-6 py-8"
+      style={{
+        paddingLeft: "max(1rem, env(safe-area-inset-left))",
+        paddingRight: "max(1rem, env(safe-area-inset-right))",
+        paddingTop: "max(2rem, env(safe-area-inset-top))",
+      }}
+    >
         <header className="space-y-3">
           <p className="text-xs font-medium tracking-[0.2em] text-muted-foreground uppercase">
             金具学習
@@ -89,7 +95,6 @@ export default function HomePage() {
             })}
           </div>
         </section>
-      </main>
-    </div>
+    </main>
   );
 }

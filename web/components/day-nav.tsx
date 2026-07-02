@@ -14,14 +14,23 @@ function dayHref(day: number): string {
 }
 
 export function DayNav({ prev, next }: DayNavProps) {
-  const baseClass = "h-11 flex-1 gap-2 text-sm";
+  const baseClass = "h-12 flex-1 gap-2 text-sm";
 
   return (
     <nav
-      className="fixed inset-x-0 bottom-0 z-20 border-t bg-background/95 px-4 py-3 backdrop-blur supports-[backdrop-filter]:bg-background/80"
+      className="fixed inset-x-0 bottom-0 z-20 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/85"
+      style={{
+        paddingBottom: "max(0.75rem, env(safe-area-inset-bottom))",
+      }}
       aria-label="日付ナビゲーション"
     >
-      <div className="mx-auto flex max-w-lg items-center justify-between gap-3">
+      <div
+        className="mx-auto flex max-w-lg items-center justify-between gap-3 px-4 pt-3"
+        style={{
+          paddingLeft: "max(1rem, env(safe-area-inset-left))",
+          paddingRight: "max(1rem, env(safe-area-inset-right))",
+        }}
+      >
         {prev ? (
           <Link
             href={dayHref(prev)}
