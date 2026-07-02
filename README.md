@@ -10,6 +10,7 @@
 | `config.yaml` | 開始日・リポジトリ・OpenAI 設定 |
 | `curriculum/index.yaml` | 365日分の学習目次 |
 | `posts/day-NNN.md` | 各日の学習記事（Mermaid 図付き） |
+| `web/` | モバイル向け記事リーダー（Next.js + shadcn/ui） |
 | `scripts/` | 生成・投稿スクリプト |
 | `.github/workflows/` | 自動実行（毎日投稿・月次生成） |
 
@@ -55,7 +56,24 @@ $env:SLACK_WEBHOOK_URL = "https://hooks.slack.com/services/..."
 npm run post:test
 ```
 
-携帯向けに Block Kit 形式で投稿されます（要約・今日のポイント3つ・全文ボタン）。
+携帯向けに Block Kit 形式で投稿されます（要約・今日のポイント3つ・全文ボタン）。  
+全文ボタンは `config.yaml` の `site_base_url`（モバイルリーダー）へリンクします。
+
+### モバイルリーダー（Next.js）
+
+```powershell
+cd web
+npm install
+npm run dev
+```
+
+http://localhost:3002 を開くと、当日分（または記事一覧）が表示されます。
+
+#### Vercel デプロイ
+
+1. Vercel でリポジトリをインポート
+2. **Root Directory** を `web` に設定
+3. デプロイ後の URL を `config.yaml` の `site_base_url` に設定して push
 
 ### 既存記事に mobile_lead を付与
 
@@ -78,7 +96,7 @@ npm run patch:mobile
 ## 1日の流れ
 
 1. 毎月1日 0:00 — GPT-4o が当月分の `posts/day-NNN.md` を生成してコミット
-2. 毎日 0:00 — 当日分を Slack に投稿（本文 + GitHub リンク）
+2. 毎日 0:00 — 当日分を Slack に投稿（要約 + モバイルリーダーへのリンク）
 
 ## 費用の目安
 
@@ -86,6 +104,7 @@ npm run patch:mobile
 |------|------|
 | GitHub Actions | 無料枠内 |
 | Slack Webhook | 無料 |
+| Vercel（モバイルリーダー） | Hobby 無料枠 |
 | GPT-4o（月31日分生成） | 約 500〜1,500円/月 |
 
 ## 注意

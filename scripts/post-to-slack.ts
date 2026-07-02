@@ -1,9 +1,9 @@
 import { existsSync, readFileSync } from "node:fs";
 import {
+  articleUrl,
   buildSlackPayload,
   dayFileName,
   getDayNumberForDate,
-  githubBlobUrl,
   loadConfig,
   parsePost,
   postPath,
@@ -55,11 +55,7 @@ async function main(): Promise<void> {
 
   const content = readFileSync(path, "utf8");
   const parsed = parsePost(content, config);
-  const url = githubBlobUrl(
-    process.env.GITHUB_REPOSITORY ?? config.github_repo,
-    process.env.GITHUB_REF_NAME ?? config.default_branch,
-    day,
-  );
+  const url = articleUrl(config, day);
 
   const totalDays = config.slack?.total_days ?? 365;
   const payload = buildSlackPayload(parsed, url, totalDays);

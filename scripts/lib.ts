@@ -11,6 +11,7 @@ export type AppConfig = {
   timezone: string;
   default_branch: string;
   github_repo: string;
+  site_base_url?: string;
   reference_manufacturers: Array<{ name: string; url: string }>;
   openai: { model: string; temperature: number };
   slack?: {
@@ -104,6 +105,17 @@ export function githubBlobUrl(
   day: number,
 ): string {
   return `https://github.com/${repo}/blob/${branch}/posts/${dayFileName(day)}`;
+}
+
+export function articleUrl(config: AppConfig, day: number): string {
+  if (config.site_base_url) {
+    const base = config.site_base_url.replace(/\/$/, "");
+    return `${base}/day/${String(day).padStart(3, "0")}`;
+  }
+
+  const repo = process.env.GITHUB_REPOSITORY ?? config.github_repo;
+  const branch = process.env.GITHUB_REF_NAME ?? config.default_branch;
+  return githubBlobUrl(repo, branch, day);
 }
 
 export function truncate(text: string, max: number): string {
@@ -244,7 +256,7 @@ export function buildSlackPayload(
     elements: [
       {
         type: "mrkdwn",
-        text: "スマホ: ボタンをタップ → GitHub で Mermaid 図を表示",
+        text: "スマホ: ボタンをタップ → 図つき全文を表示",
       },
     ],
   });

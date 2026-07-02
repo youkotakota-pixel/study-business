@@ -3,6 +3,8 @@ start_date: "2026-07-07" # Day 001 の日付（この日の 0:00 から開始）
 timezone: "Asia/Tokyo"
 default_branch: main
 github_repo: youkotakota-pixel/study-business
+# Slack の「図つき全文を見る」リンク先（Vercel デプロイ後に実際の URL に更新）
+site_base_url: "https://study-business.vercel.app"
 
 # 4社サイトはカテゴリ・用途の参照のみ（説明文は独自執筆）
 reference_manufacturers:
