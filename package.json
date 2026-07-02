@@ -1,0 +1,21 @@
+{
+  "name": "study-business",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "curriculum:build": "tsx scripts/build-curriculum.ts",
+    "generate:month": "tsx scripts/generate-month.ts",
+    "post:daily": "tsx scripts/post-to-slack.ts",
+    "post:test": "tsx scripts/post-to-slack.ts --day=1"
+  },
+  "dependencies": {
+    "openai": "^4.104.0",
+    "yaml": "^2.8.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.0",
+    "tsx": "^4.19.4",
+    "typescript": "^5.8.3"
+  }
+}

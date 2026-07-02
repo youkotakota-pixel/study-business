@@ -1,0 +1,40 @@
+name: Post daily to Slack
+
+on:
+  schedule:
+    # 毎日 0:00 JST (= 15:00 UTC)
+    - cron: "0 15 * * *"
+  workflow_dispatch:
+    inputs:
+      day:
+        description: "投稿する Day 番号（空なら今日）"
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  post:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+
+      - run: npm ci
+
+      - name: Post to Slack
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          GITHUB_REF_NAME: ${{ github.ref_name }}
+        run: |
+          if [ -n "${{ github.event.inputs.day }}" ]; then
+            npm run post:daily -- --day=${{ github.event.inputs.day }}
+          else
+            npm run post:daily
+          fi

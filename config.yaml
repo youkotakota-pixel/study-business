@@ -1,0 +1,20 @@
+# 学習Botの運用設定
+start_date: "2026-07-07" # Day 001 の日付（この日の 0:00 から開始）
+timezone: "Asia/Tokyo"
+default_branch: main
+github_repo: youkotakota-pixel/study-business
+
+# 4社サイトはカテゴリ・用途の参照のみ（説明文は独自執筆）
+reference_manufacturers:
+  - name: タキゲン
+    url: https://www.takigen.co.jp/
+  - name: シブタニ（APPIT）
+    url: https://www.shibutani-appit.jp/top/
+  - name: 栃木屋
+    url: https://info.tochigiya.jp/
+  - name: スガツネ
+    url: https://www.sugatsune.co.jp/
+
+openai:
+  model: gpt-4o
+  temperature: 0.4

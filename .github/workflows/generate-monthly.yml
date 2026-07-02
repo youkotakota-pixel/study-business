@@ -1,0 +1,77 @@
+name: Generate monthly posts
+
+on:
+  schedule:
+    # 毎日 15:00 UTC をチェックし、JST で1日のとき当月分を生成（= 毎月1日 0:00 JST）
+    - cron: "0 15 * * *"
+  workflow_dispatch:
+    inputs:
+      year:
+        description: "生成対象の年"
+        required: false
+        type: string
+      month:
+        description: "生成対象の月"
+        required: false
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check if today is 1st in JST (skip on schedule unless day 1)
+        id: gate
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "run=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          DAY=$(TZ=Asia/Tokyo date +%d)
+          if [ "$DAY" = "01" ]; then
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "run=false" >> "$GITHUB_OUTPUT"
+            echo "Not the 1st in JST, skipping."
+          fi
+
+      - uses: actions/setup-node@v4
+        if: steps.gate.outputs.run == 'true'
+        with:
+          node-version: "22"
+          cache: npm
+
+      - if: steps.gate.outputs.run == 'true'
+        run: npm ci
+
+      - name: Build curriculum if missing
+        if: steps.gate.outputs.run == 'true'
+        run: npm run curriculum:build
+
+      - name: Generate posts for month
+        if: steps.gate.outputs.run == 'true'
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: |
+          if [ -n "${{ github.event.inputs.year }}" ] && [ -n "${{ github.event.inputs.month }}" ]; then
+            npm run generate:month -- --year=${{ github.event.inputs.year }} --month=${{ github.event.inputs.month }}
+          else
+            npm run generate:month
+          fi
+
+      - name: Commit generated posts
+        if: steps.gate.outputs.run == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add posts/
+          if git diff --staged --quiet; then
+            echo "No new posts to commit"
+            exit 0
+          fi
+          git commit -m "content: add generated posts"
+          git push
