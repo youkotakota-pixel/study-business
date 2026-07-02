@@ -81,15 +81,18 @@ ${previousTitles.slice(-5).join("\n") || "なし"}
 3. 専門用語は初出時に平易な言葉で補足する
 4. 図面の読み方ができなくても理解できるようにする
 5. 事実不明な断定は避け、一般的な原理で説明する
-6. 800〜1200文字程度の日本語
-7. 必ず Mermaid の flowchart または sequenceDiagram を1つ含める
-8. 出力は Markdown 全文のみ（前置きやコードフェンスで囲まない）
+6. 本文は 800〜1200 文字程度の日本語（GitHub 全文用）
+7. Mermaid はノード5個以内・ラベルは各10字以内（スマホで見やすく）
+8. 「今日のポイント」は各40字以内・ちょうど3つ（Slack 携帯通知用）
+9. mobile_lead は120字以内・1〜2文（Slack にそのまま載る要約）
+10. 出力は Markdown 全文のみ（前置きやコードフェンスで囲まない）
 
 ## 出力フォーマット（この frontmatter から始める）
 ---
 day: ${entry.day}
 title: "${entry.title}"
 category: "${entry.category}"
+mobile_lead: "（120字以内の要約。スマホの Slack で読む想定）"
 ---
 
 # Day ${String(entry.day).padStart(3, "0")}: ${entry.title}

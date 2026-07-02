@@ -55,6 +55,14 @@ $env:SLACK_WEBHOOK_URL = "https://hooks.slack.com/services/..."
 npm run post:test
 ```
 
+携帯向けに Block Kit 形式で投稿されます（要約・今日のポイント3つ・全文ボタン）。
+
+### 既存記事に mobile_lead を付与
+
+```powershell
+npm run patch:mobile
+```
+
 ### GitHub Actions で手動実行
 
 - **Post daily to Slack** → `day` に番号を入れるとその日を投稿

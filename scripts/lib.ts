@@ -13,6 +13,11 @@ export type AppConfig = {
   github_repo: string;
   reference_manufacturers: Array<{ name: string; url: string }>;
   openai: { model: string; temperature: number };
+  slack?: {
+    total_days: number;
+    mobile_lead_max_chars: number;
+    mobile_point_max_chars: number;
+  };
 };
 
 export type CurriculumDay = {
@@ -26,6 +31,17 @@ export type Curriculum = {
   total_days: number;
   days: CurriculumDay[];
 };
+
+export type ParsedPost = {
+  day: number;
+  title: string;
+  category: string;
+  lead: string;
+  points: string[];
+  body: string;
+};
+
+export type SlackBlock = Record<string, unknown>;
 
 export function loadConfig(): AppConfig {
   const path = join(ROOT, "config.yaml");
@@ -90,24 +106,148 @@ export function githubBlobUrl(
   return `https://github.com/${repo}/blob/${branch}/posts/${dayFileName(day)}`;
 }
 
+export function truncate(text: string, max: number): string {
+  const normalized = text.replace(/\s+/g, " ").trim();
+  if (normalized.length <= max) return normalized;
+  return `${normalized.slice(0, max - 1)}…`;
+}
+
+function stripMarkdown(text: string): string {
+  return text
+    .replace(/\*\*(.+?)\*\*/g, "$1")
+    .replace(/\[(.+?)\]\(.+?\)/g, "$1")
+    .replace(/`(.+?)`/g, "$1")
+    .trim();
+}
+
+export function extractLead(body: string, maxChars: number): string {
+  const intro = body.split(/\n## /)[0] ?? body;
+  const paragraphs = intro
+    .replace(/^#.+$/m, "")
+    .split(/\n\n+/)
+    .map((p) => stripMarkdown(p))
+    .filter((p) => p.length > 15 && !p.startsWith("以下の"));
+
+  return truncate(paragraphs[0] ?? "", maxChars);
+}
+
+function extractPoints(body: string, maxChars: number): string[] {
+  const section =
+    body.match(/## 今日のポイント\s*\n([\s\S]*?)(?=\n## |$)/)?.[1] ?? "";
+
+  return section
+    .split("\n")
+    .map((line) => stripMarkdown(line.replace(/^[-*]\s+/, "")))
+    .filter((line) => line.length > 0)
+    .slice(0, 3)
+    .map((line) => truncate(line, maxChars));
+}
+
+export function parsePost(content: string, config?: AppConfig): ParsedPost {
+  const leadMax = config?.slack?.mobile_lead_max_chars ?? 120;
+  const pointMax = config?.slack?.mobile_point_max_chars ?? 45;
+
+  const match = content.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n([\s\S]*)$/);
+  if (!match) {
+    return {
+      day: 0,
+      title: "学習投稿",
+      category: "",
+      lead: truncate(content, leadMax),
+      points: [],
+      body: content,
+    };
+  }
+
+  const front = match[1];
+  const body = match[2].trim();
+  const day = Number(front.match(/^day:\s*(\d+)/m)?.[1] ?? 0);
+  const title = front.match(/^title:\s*"?(.+?)"?\s*$/m)?.[1] ?? "学習投稿";
+  const category = front.match(/^category:\s*"?(.+?)"?\s*$/m)?.[1] ?? "";
+  const mobileLead = front.match(/^mobile_lead:\s*"(.+)"\s*$/m)?.[1];
+
+  return {
+    day,
+    title,
+    category,
+    lead: mobileLead
+      ? truncate(mobileLead.replace(/\\"/g, '"'), leadMax)
+      : extractLead(body, leadMax),
+    points: extractPoints(body, pointMax),
+    body,
+  };
+}
+
+/** @deprecated parsePost を使用 */
 export function parsePostFrontmatter(content: string): {
   title: string;
   summary: string;
   body: string;
 } {
-  const match = content.match(/^---\n([\s\S]*?)\n---\n([\s\S]*)$/);
-  if (!match) {
-    return { title: "学習投稿", summary: content.slice(0, 200), body: content };
+  const parsed = parsePost(content);
+  return { title: parsed.title, summary: parsed.lead, body: parsed.body };
+}
+
+export function buildSlackPayload(
+  parsed: ParsedPost,
+  articleUrl: string,
+  totalDays = 365,
+): { text: string; blocks: SlackBlock[] } {
+  const dayLabel = `Day ${String(parsed.day).padStart(3, "0")}`;
+  const headerText = truncate(`${dayLabel} ${parsed.title}`, 145);
+  const fallbackText = `${dayLabel}: ${parsed.title}`;
+
+  const blocks: SlackBlock[] = [
+    {
+      type: "header",
+      text: { type: "plain_text", text: headerText, emoji: true },
+    },
+    {
+      type: "context",
+      elements: [
+        {
+          type: "mrkdwn",
+          text: `📂 *${parsed.category}*　·　${parsed.day} / ${totalDays} 日目`,
+        },
+      ],
+    },
+    {
+      type: "section",
+      text: { type: "mrkdwn", text: parsed.lead },
+    },
+  ];
+
+  if (parsed.points.length > 0) {
+    blocks.push({
+      type: "section",
+      text: {
+        type: "mrkdwn",
+        text: `*今日のポイント*\n${parsed.points.map((p) => `• ${p}`).join("\n")}`,
+      },
+    });
   }
-  const front = match[1];
-  const body = match[2].trim();
-  const title = front.match(/^title:\s*"?(.+?)"?\s*$/m)?.[1] ?? "学習投稿";
-  const summary =
-    body
-      .replace(/```[\s\S]*?```/g, "")
-      .replace(/#+\s/g, "")
-      .split("\n")
-      .map((line) => line.trim())
-      .find((line) => line.length > 0) ?? title;
-  return { title, summary, body };
+
+  blocks.push({ type: "divider" });
+  blocks.push({
+    type: "actions",
+    elements: [
+      {
+        type: "button",
+        text: { type: "plain_text", text: "図つき全文を見る", emoji: true },
+        url: articleUrl,
+        action_id: `read-day-${parsed.day}`,
+      },
+    ],
+  });
+  blocks.push({
+    type: "context",
+    elements: [
+      {
+        type: "mrkdwn",
+        text: "スマホ: ボタンをタップ → GitHub で Mermaid 図を表示",
+      },
+    ],
+  });
+
+  return { text: fallbackText, blocks };
 }

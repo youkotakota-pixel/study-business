@@ -1,10 +1,11 @@
 import { existsSync, readFileSync } from "node:fs";
 import {
+  buildSlackPayload,
   dayFileName,
   getDayNumberForDate,
   githubBlobUrl,
   loadConfig,
-  parsePostFrontmatter,
+  parsePost,
   postPath,
   todayInJst,
 } from "./lib.js";
@@ -15,11 +16,14 @@ function parseDayArg(): number | null {
   return null;
 }
 
-async function postToSlack(webhookUrl: string, text: string): Promise<void> {
+async function postToSlack(
+  webhookUrl: string,
+  payload: { text: string; blocks: unknown[] },
+): Promise<void> {
   const response = await fetch(webhookUrl, {
     method: "POST",
     headers: { "Content-Type": "application/json; charset=utf-8" },
-    body: JSON.stringify({ text }),
+    body: JSON.stringify(payload),
   });
 
   if (!response.ok) {
@@ -35,8 +39,7 @@ async function main(): Promise<void> {
 
   const explicitDay = parseDayArg();
   const day =
-    explicitDay ??
-    getDayNumberForDate(todayInJst(), config.start_date);
+    explicitDay ?? getDayNumberForDate(todayInJst(), config.start_date);
 
   if (day == null) {
     console.log("今日は学習期間外です（start_date〜365日間）");
@@ -51,25 +54,18 @@ async function main(): Promise<void> {
   }
 
   const content = readFileSync(path, "utf8");
-  const { title, summary } = parsePostFrontmatter(content);
+  const parsed = parsePost(content, config);
   const url = githubBlobUrl(
     process.env.GITHUB_REPOSITORY ?? config.github_repo,
     process.env.GITHUB_REF_NAME ?? config.default_branch,
     day,
   );
 
-  const message = [
-    `📘 *Day ${String(day).padStart(3, "0")}: ${title}*`,
-    "",
-    summary,
-    "",
-    `🔍 図で見る → ${url}`,
-    "",
-    `#金具学習 #${dayFileName(day).replace(".md", "")}`,
-  ].join("\n");
+  const totalDays = config.slack?.total_days ?? 365;
+  const payload = buildSlackPayload(parsed, url, totalDays);
 
-  await postToSlack(webhookUrl, message);
-  console.log(`Posted Day ${day} to Slack`);
+  await postToSlack(webhookUrl, payload);
+  console.log(`Posted Day ${day} to Slack (mobile blocks)`);
 }
 
 main().catch((error: unknown) => {

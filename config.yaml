@@ -18,3 +18,9 @@ reference_manufacturers:
 openai:
   model: gpt-4o
   temperature: 0.4
+
+# Slack 携帯向け（本文は Slack に収まる量だけ、図は GitHub リンク）
+slack:
+  total_days: 365
+  mobile_lead_max_chars: 120
+  mobile_point_max_chars: 45

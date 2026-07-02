@@ -6,6 +6,7 @@
   "scripts": {
     "curriculum:build": "tsx scripts/build-curriculum.ts",
     "generate:month": "tsx scripts/generate-month.ts",
+    "patch:mobile": "tsx scripts/patch-mobile-lead.ts",
     "post:daily": "tsx scripts/post-to-slack.ts",
     "post:test": "tsx scripts/post-to-slack.ts --day=1"
   },
