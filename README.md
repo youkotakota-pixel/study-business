@@ -71,9 +71,12 @@ http://localhost:3002 を開くと、当日分（または記事一覧）が表�
 
 #### Vercel デプロイ
 
-1. Vercel でリポジトリをインポート
-2. **Root Directory** を `web` に設定
-3. デプロイ後の URL を `config.yaml` の `site_base_url` に設定して push
+1. Vercel でリポジトリ `youkotakota-pixel/study-business` を Import（プロジェクト名: `study-business`）
+2. **Root Directory は変更不要**（リポジトリ直下の `vercel.json` が `web/` をビルドします）
+3. 本番 URL: https://study-business.vercel.app
+4. デプロイ後の URL を `config.yaml` の `site_base_url` に設定
+
+重複プロジェクト（例: `study-business-xxxx`）を作った場合は Vercel ダッシュボードで削除してください。
 
 ### 既存記事に mobile_lead を付与
 
