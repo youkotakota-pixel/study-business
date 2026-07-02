@@ -50,31 +50,34 @@ export function postPath(day: number): string {
   return join(ROOT, "posts", dayFileName(day));
 }
 
-/** GitHub Actions (UTC) から見た「いまの JST 日付」 */
-export function todayInJst(): Date {
+function formatJstYmd(date: Date): string {
   const parts = new Intl.DateTimeFormat("en-CA", {
     timeZone: "Asia/Tokyo",
     year: "numeric",
     month: "2-digit",
     day: "2-digit",
-  }).formatToParts(new Date());
+  }).formatToParts(date);
 
   const y = parts.find((p) => p.type === "year")?.value ?? "1970";
   const m = parts.find((p) => p.type === "month")?.value ?? "01";
   const d = parts.find((p) => p.type === "day")?.value ?? "01";
-  return new Date(`${y}-${m}-${d}T12:00:00+09:00`);
+  return `${y}-${m}-${d}`;
+}
+
+function parseJstDate(ymd: string): Date {
+  return new Date(`${ymd}T00:00:00+09:00`);
+}
+
+/** GitHub Actions (UTC) から見た「いまの JST 日付」 */
+export function todayInJst(): Date {
+  return parseJstDate(formatJstYmd(new Date()));
 }
 
 export function getDayNumberForDate(date: Date, startDate: string): number | null {
-  const start = new Date(`${startDate}T00:00:00+09:00`);
-  const target = new Date(
-    Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()),
-  );
-  const startUtc = new Date(
-    Date.UTC(start.getFullYear(), start.getMonth(), start.getDate()),
-  );
-  const diffMs = target.getTime() - startUtc.getTime();
-  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24)) + 1;
+  const targetYmd = formatJstYmd(date);
+  const targetMs = parseJstDate(targetYmd).getTime();
+  const startMs = parseJstDate(startDate).getTime();
+  const diffDays = Math.floor((targetMs - startMs) / (1000 * 60 * 60 * 24)) + 1;
   if (diffDays < 1 || diffDays > 365) return null;
   return diffDays;
 }

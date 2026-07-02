@@ -41,8 +41,11 @@ function getTargetDays(
   const targets: CurriculumDay[] = [];
 
   for (let d = 1; d <= count; d += 1) {
-    const date = `${year}-${String(month).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
-    const dayNum = getDayNumberForDate(new Date(`${date}T12:00:00Z`), startDate);
+    const ymd = `${year}-${String(month).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+    const dayNum = getDayNumberForDate(
+      new Date(`${ymd}T00:00:00+09:00`),
+      startDate,
+    );
     if (dayNum == null) continue;
     const entry = curriculum.days.find((item) => item.day === dayNum);
     if (entry) targets.push(entry);
