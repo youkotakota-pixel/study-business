@@ -21,7 +21,7 @@ export function DayHeader({
   totalDays,
 }: DayHeaderProps) {
   const dayLabel = `Day ${String(day).padStart(3, "0")}`;
-  const progress = Math.round((day / totalDays) * 100);
+  const progress = Math.ceil((day / totalDays) * 100);
 
   return (
     <header className="space-y-4">
