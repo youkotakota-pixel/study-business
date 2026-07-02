@@ -4,8 +4,23 @@ import { fileURLToPath } from "node:url";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const webRoot = join(__dirname, "..");
-const repoRoot = join(webRoot, "..");
 const contentDir = join(webRoot, "content");
+
+function resolveRepoRoot() {
+  const candidates = [
+    join(webRoot, ".."),
+    join(webRoot, "../.."),
+    process.env.VERCEL ? "/vercel/path0" : null,
+  ].filter(Boolean);
+
+  for (const candidate of candidates) {
+    if (existsSync(join(candidate, "posts"))) return candidate;
+  }
+
+  return join(webRoot, "..");
+}
+
+const repoRoot = resolveRepoRoot();
 
 mkdirSync(join(contentDir, "posts"), { recursive: true });
 

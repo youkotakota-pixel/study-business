@@ -4,3 +4,5 @@ Thumbs.db
 *.tmp
 .env
 .env.*
+.vercel
+.env*
