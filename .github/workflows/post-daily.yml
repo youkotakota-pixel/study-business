@@ -2,8 +2,9 @@ name: Post daily to Slack
 
 on:
   schedule:
-    # 毎日 0:00 JST (= 15:00 UTC)
-    - cron: "0 15 * * *"
+    # 毎日 0:20 JST (= 15:20 UTC)
+    # 月初は generate-monthly（0:00 JST）完了後に投稿するため、20分ずらす
+    - cron: "20 15 * * *"
   workflow_dispatch:
     inputs:
       day:
