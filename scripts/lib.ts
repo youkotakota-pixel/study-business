@@ -90,6 +90,16 @@ export function todayInJst(): Date {
   return parseJstDate(formatJstYmd(new Date()));
 }
 
+/** ランナー TZ に依存せず、いまの JST 年月を返す */
+export function currentJstYearMonth(date = new Date()): {
+  year: number;
+  month: number;
+} {
+  const ymd = formatJstYmd(date);
+  const [year, month] = ymd.split("-").map(Number);
+  return { year: year ?? 1970, month: month ?? 1 };
+}
+
 export function getDayNumberForDate(date: Date, startDate: string): number | null {
   const targetYmd = formatJstYmd(date);
   const targetMs = parseJstDate(targetYmd).getTime();

@@ -4,14 +4,13 @@ import {
   dayFileName,
   getDayNumberForDate,
   loadConfig,
-  todayInJst,
+  currentJstYearMonth,
   loadCurriculum,
   postPath,
   type CurriculumDay,
 } from "./lib.js";
 
 function parseArgs(): { year: number; month: number } {
-  const now = new Date();
   const yearArg = process.argv.find((arg) => arg.startsWith("--year="));
   const monthArg = process.argv.find((arg) => arg.startsWith("--month="));
 
@@ -23,8 +22,8 @@ function parseArgs(): { year: number; month: number } {
   }
 
   // JST の当月分を生成（毎月1日 0:00 実行を想定）
-  const jst = todayInJst();
-  return { year: jst.getFullYear(), month: jst.getMonth() + 1 };
+  // ※ Date#getMonth() はランナー TZ（UTC）基準なので使わない
+  return currentJstYearMonth();
 }
 
 function daysInMonth(year: number, month: number): number {
